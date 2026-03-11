@@ -1,6 +1,12 @@
+# Core
 torch
 torchvision
 opencv-python
 pillow
 numpy
 tqdm
+
+# Face & person detection
+ultralytics>=8.0.21      # YOLOv8-pose (person + keypoints)
+ensemble-boxes           # YOLOv8-Face dependency
+deepface                 # ArcFace re-ID for Ego4D identity clustering

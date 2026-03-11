@@ -59,7 +59,9 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 
 | # | Dataset / Task | Model | Repo | Weights |
 |---|---|---|---|---|
-| 1 | **Face & person detection** (prerequisite) | TBD | `models/face/` | TBD |
+| 1a | **Face detection + landmarks** (prerequisite) | YOLOv8-Face | [Yusepp/YOLOv8-Face](https://github.com/Yusepp/YOLOv8-Face) | see below |
+| 1b | **Person detection + keypoints** (prerequisite) | YOLOv8-pose | [ultralytics](https://github.com/ultralytics/ultralytics) | auto-download |
+| 1c | **Face re-ID** — Ego4D identity clustering | ArcFace via DeepFace | `pip install deepface` | auto-download |
 | 2 | **GazeFollow** — image gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
 | 3 | **VideoAttentionTarget** — video gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
 | 4 | **VideoCoAttention** — shared attention | TBD | TBD | TBD |
@@ -77,20 +79,45 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 
 ---
 
+## Setup
+
+### 1. Clone model repos
+
+```bash
+git clone https://github.com/Yusepp/YOLOv8-Face models/face/YOLOv8-Face
+git clone https://github.com/fkryan/gazelle models/gaze/gazelle
+# ... (fill in remaining repos as decided)
+```
+
+### 2. Download YOLOv8-Face weights
+
+Place weights under `models/face/YOLOv8-Face/weights/`:
+
+| Variant | Download |
+|---------|----------|
+| Large (v0.1) | [Google Drive](https://drive.google.com/file/d/1iHL-XjvzpbrE8ycVqEbGla4yc1dWlSWU/view?usp=sharing) |
+| Medium (v0.2) | [Google Drive](https://drive.google.com/file/d/1IJZBcyMHGhzAi0G4aZLcqryqZSjPsps-/view?usp=sharing) |
+| Nano (v0.1) | [Google Drive](https://drive.google.com/file/d/1ZD_CEsbo3p3_dd8eAtRfRxHDV44M0djK/view?usp=sharing) |
+
+> We use **Medium** as the default balance between speed and accuracy.
+
+### 3. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+> YOLOv8-pose weights (`yolov8m-pose.pt`) and DeepFace/ArcFace weights download automatically on first use.
+
+---
+
 ## Workflow
 
 ```bash
-# 1. Clone model repos (see Models table above)
-git clone https://github.com/fkryan/gazelle models/gaze/gazelle
-# ... (fill in remaining repos as decided)
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Run face/person detection first (prerequisite)
+# 1. Run face/person detection + build per-game player registry (prerequisite)
 python scripts/run_detection.py
 
-# 4. Run inference — one script per task (can be parallelised)
+# 2. Run inference — one script per task (can be parallelised)
 python scripts/run_gazelle.py          # GazeFollow + VideoAttentionTarget
 python scripts/run_coattention.py      # VideoCoAttention
 python scripts/run_affwild2.py         # Facial expression / VA / AUs
@@ -105,11 +132,11 @@ python scripts/run_urfunny.py          # Humor
 python scripts/run_vocalsound.py       # Vocal sounds
 python scripts/run_voxconverse.py      # Speaker diarization
 
-# 5. Merge all annotation JSONs
+# 3. Merge all annotation JSONs
 python scripts/merge_annotations.py
 # → annotations/master.json
 
-# 6. Use master.json in the data/ pipeline Werewolf builder
+# 4. Use master.json in the data/ pipeline Werewolf builder
 ```
 
 ---
