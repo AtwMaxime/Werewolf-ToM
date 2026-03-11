@@ -10,3 +10,6 @@ tqdm
 ultralytics>=8.0.21      # YOLOv8-pose (person + keypoints)
 ensemble-boxes           # YOLOv8-Face dependency
 deepface                 # ArcFace re-ID for Ego4D identity clustering
+
+# Facial expression + valence/arousal
+hsemotion                # EfficientNet-based, models: enet_b0_8_va_mtl (VA), enet_b2_8 (expr)
