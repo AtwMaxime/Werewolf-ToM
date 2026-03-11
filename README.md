@@ -27,7 +27,7 @@ WOLF-ToM/
 │   │   ├── CocoER/
 │   │   └── DRKF/
 │   ├── audio/                        # AST (VocalSound), pyannote.audio (diarization)
-│   └── behavior/                     # MUStARD (sarcasm), RLDD (deception), UR-FUNNY (humor)
+│   └── behavior/                     # (reserved for future use)
 ├── annotations/                      # Inference output caches (not tracked)
 │   ├── detections_youtube.json       # Face/person bboxes + keypoints + player registry
 │   ├── detections_ego4d.json
@@ -58,9 +58,6 @@ WOLF-ToM/
 │   ├── run_proxemics.py              # keypoint distances → proxemics_*.json
 │   ├── run_vocalsound.py             # AST → vocalsound_*.json
 │   ├── run_voxconverse.py            # pyannote → diarization_*.json
-│   ├── run_mustard.py                # TBD → sarcasm_*.json
-│   ├── run_rldd.py                   # TBD → deception_*.json
-│   ├── run_urfunny.py                # TBD → humor_*.json
 │   └── merge_annotations.py          # All JSONs → master.json
 ├── requirements.txt
 └── README.md
@@ -101,9 +98,6 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 | 6 | **EMOTIC** — context emotion (26 discrete categories) | CocoER | [bisno/CocoER](https://github.com/bisno/CocoER) → `models/emotion/` | see below |
 | 8 | **MELD** — speech emotion (7 classes) | DRKF | [PANPANKK/DRKF](https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition) → `models/emotion/` | bundled locally |
 | 10 | **Proxemics** — physical contact | YOLOv8-pose (keypoint distances) | already in 1b | — |
-| 11 | **MUStARD** — sarcasm detection | TBD | `models/behavior/` | TBD |
-| 12 | **RLDD** — deception detection | TBD | `models/behavior/` | TBD |
-| 13 | **UR-FUNNY** — humor detection | TBD | `models/behavior/` | TBD |
 | 14 | **VocalSound** — vocal sound classification | AST | `pip install transformers` → `models/audio/` | auto-download (HuggingFace) |
 | 15 | **VoxConverse** — speaker diarization | pyannote.audio | `pip install pyannote.audio` → `models/audio/` | HuggingFace (requires token) |
 
@@ -125,10 +119,6 @@ git clone https://github.com/idiap/MTGS models/gaze/MTGS
 git clone https://github.com/bisno/CocoER models/emotion/CocoER
 git clone https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition models/emotion/DRKF
 
-# Behavior (TBD)
-# git clone <mustard-repo> models/behavior/MUStARD
-# git clone <rldd-repo>    models/behavior/RLDD
-# git clone <urfunny-repo> models/behavior/UR-FUNNY
 ```
 
 ### 2. Download YOLOv8-Face weights
@@ -217,9 +207,6 @@ python scripts/run_hsemotion.py        # Facial expression (8 classes) + valence
 python scripts/run_cocoer.py           # Context emotion (26 discrete categories, CocoER)
 python scripts/run_meld.py             # Speech emotion (7 classes, DRKF — custom inference wrapper)
 python scripts/run_proxemics.py        # Physical contact (pairwise keypoint distances from YOLOv8-pose)
-python scripts/run_mustard.py          # Sarcasm
-python scripts/run_rldd.py             # Deception
-python scripts/run_urfunny.py          # Humor
 python scripts/run_vocalsound.py       # Vocal sounds (AST)
 python scripts/run_voxconverse.py      # Speaker diarization (pyannote.audio)
 
