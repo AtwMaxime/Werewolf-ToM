@@ -57,33 +57,59 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 
 ## Models
 
-| Task | Model | Repo |
-|------|-------|------|
-| Gaze target detection | VideoAttentionTarget | `models/gaze/` |
-| Facial emotion recognition | AffWild2 / ABAW | `models/emotion/` |
-| Face detection | (TBD) | `models/face/` |
+| # | Dataset / Task | Model | Repo | Weights |
+|---|---|---|---|---|
+| 1 | **Face & person detection** (prerequisite) | TBD | `models/face/` | TBD |
+| 2 | **GazeFollow** — image gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
+| 3 | **VideoAttentionTarget** — video gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
+| 4 | **VideoCoAttention** — shared attention | TBD | TBD | TBD |
+| 5 | **AffWild2** — facial expression, valence/arousal, AUs | TBD | `models/emotion/` | TBD |
+| 6 | **EMOTIC** — context emotion (26 cats + VAD) | TBD | `models/emotion/` | TBD |
+| 7 | **MEVIEW / MMEW** — micro-expression + AUs | TBD | `models/emotion/` | TBD |
+| 8 | **MELD** — speech emotion (7 classes) | TBD | `models/emotion/` | TBD |
+| 9 | **PISC** — social relationship | TBD | `models/` | TBD |
+| 10 | **Proxemics** — physical contact | TBD | `models/` | TBD |
+| 11 | **MUStARD** — sarcasm detection | TBD | `models/` | TBD |
+| 12 | **RLDD** — deception detection | TBD | `models/` | TBD |
+| 13 | **UR-FUNNY** — humor detection | TBD | `models/` | TBD |
+| 14 | **VocalSound** — vocal sound classification | TBD | `models/` | TBD |
+| 15 | **VoxConverse** — speaker diarization | TBD | `models/` | TBD |
 
 ---
 
 ## Workflow
 
 ```bash
-# 1. Clone model repos into models/
-git clone <gaze-repo> models/gaze/videoattentiontarget
-git clone <emotion-repo> models/emotion/affwild2
+# 1. Clone model repos (see Models table above)
+git clone https://github.com/fkryan/gazelle models/gaze/gazelle
+# ... (fill in remaining repos as decided)
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Run inference (one script per model)
-python scripts/run_gaze.py
-python scripts/run_emotion.py
+# 3. Run face/person detection first (prerequisite)
+python scripts/run_detection.py
 
-# 4. Merge all annotations
+# 4. Run inference — one script per task (can be parallelised)
+python scripts/run_gazelle.py          # GazeFollow + VideoAttentionTarget
+python scripts/run_coattention.py      # VideoCoAttention
+python scripts/run_affwild2.py         # Facial expression / VA / AUs
+python scripts/run_emotic.py           # Context emotion
+python scripts/run_microexpr.py        # Micro-expression (MEVIEW/MMEW)
+python scripts/run_meld.py             # Speech emotion
+python scripts/run_pisc.py             # Social relationship
+python scripts/run_proxemics.py        # Physical contact
+python scripts/run_mustard.py          # Sarcasm
+python scripts/run_rldd.py             # Deception
+python scripts/run_urfunny.py          # Humor
+python scripts/run_vocalsound.py       # Vocal sounds
+python scripts/run_voxconverse.py      # Speaker diarization
+
+# 5. Merge all annotation JSONs
 python scripts/merge_annotations.py
 # → annotations/master.json
 
-# 5. Use master.json in the data/ pipeline Werewolf builder
+# 6. Use master.json in the data/ pipeline Werewolf builder
 ```
 
 ---
