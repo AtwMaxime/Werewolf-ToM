@@ -67,7 +67,7 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 | 4 | **VideoCoAttention / social gaze** — shared attention + mutual gaze | MTGS | [idiap/MTGS](https://github.com/idiap/MTGS) | HuggingFace (see below) |
 | 5 | **AffWild2** — facial expression (8 classes) + valence/arousal | HSEmotion | `pip install hsemotion` | auto-download |
 | 6 | **EMOTIC** — context emotion (26 discrete categories) | CocoER | [bisno/CocoER](https://github.com/bisno/CocoER) | see below |
-| 8 | **MELD** — speech emotion (7 classes) | TBD | `models/emotion/` | TBD |
+| 8 | **MELD** — speech emotion (7 classes) | DRKF | [PANPANKK/DRKF](https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition) | bundled locally |
 | 9 | **PISC** — social relationship | TBD | `models/` | TBD |
 | 10 | **Proxemics** — physical contact | TBD | `models/` | TBD |
 | 11 | **MUStARD** — sarcasm detection | TBD | `models/` | TBD |
@@ -87,6 +87,7 @@ git clone https://github.com/Yusepp/YOLOv8-Face models/face/YOLOv8-Face
 git clone https://github.com/fkryan/gazelle models/gaze/gazelle
 git clone https://github.com/idiap/MTGS models/gaze/MTGS
 git clone https://github.com/bisno/CocoER models/emotion/CocoER
+git clone https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition models/emotion/DRKF
 # ... (fill in remaining repos as decided)
 ```
 
@@ -134,6 +135,17 @@ cd ../../..
 
 Download pretrained weights and place them under `models/emotion/CocoER/checkpoints/` (links provided in the CocoER repo README).
 
+### DRKF (MELD — speech emotion, 7 classes)
+
+```bash
+cd models/emotion/DRKF
+conda env create -f environment.yaml -n drkf
+conda activate drkf
+cd ../../..
+```
+
+> Note: DRKF has no inference script — `scripts/run_meld.py` wraps the model's forward pass directly (wav2vec2 for audio + RoBERTa for text). Pretrained backbone weights are bundled locally in the repo.
+
 ### 4. Install Python dependencies
 
 ```bash
@@ -155,7 +167,7 @@ python scripts/run_gazelle.py          # GazeFollow + VideoAttentionTarget
 python scripts/run_mtgs.py             # VideoCoAttention + social/mutual gaze (MTGS)
 python scripts/run_hsemotion.py        # Facial expression (8 classes) + valence/arousal
 python scripts/run_cocoer.py           # Context emotion (26 discrete categories, CocoER)
-python scripts/run_meld.py             # Speech emotion
+python scripts/run_meld.py             # Speech emotion (7 classes, DRKF — custom inference wrapper)
 python scripts/run_pisc.py             # Social relationship
 python scripts/run_proxemics.py        # Physical contact
 python scripts/run_mustard.py          # Sarcasm
