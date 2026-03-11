@@ -67,7 +67,6 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 | 4 | **VideoCoAttention / social gaze** — shared attention + mutual gaze | MTGS | [idiap/MTGS](https://github.com/idiap/MTGS) | HuggingFace (see below) |
 | 5 | **AffWild2** — facial expression (8 classes) + valence/arousal | HSEmotion | `pip install hsemotion` | auto-download |
 | 6 | **EMOTIC** — context emotion (26 discrete categories) | CocoER | [bisno/CocoER](https://github.com/bisno/CocoER) | see below |
-| 7 | **MEVIEW / MMEW** — micro-expression + AUs | TBD | `models/emotion/` | TBD |
 | 8 | **MELD** — speech emotion (7 classes) | TBD | `models/emotion/` | TBD |
 | 9 | **PISC** — social relationship | TBD | `models/` | TBD |
 | 10 | **Proxemics** — physical contact | TBD | `models/` | TBD |
@@ -156,7 +155,6 @@ python scripts/run_gazelle.py          # GazeFollow + VideoAttentionTarget
 python scripts/run_mtgs.py             # VideoCoAttention + social/mutual gaze (MTGS)
 python scripts/run_hsemotion.py        # Facial expression (8 classes) + valence/arousal
 python scripts/run_cocoer.py           # Context emotion (26 discrete categories, CocoER)
-python scripts/run_microexpr.py        # Micro-expression (MEVIEW/MMEW)
 python scripts/run_meld.py             # Speech emotion
 python scripts/run_pisc.py             # Social relationship
 python scripts/run_proxemics.py        # Physical contact
