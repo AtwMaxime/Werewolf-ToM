@@ -47,6 +47,8 @@ WOLF-ToM/
 │   ├── diarization_youtube.json      # pyannote.audio: speaker timeline per game
 │   ├── diarization_ego4d.json
 │   └── master.json                   # Merged output — all tasks, all utterances
+├── preprocess/
+│   └── werewolf_extract_clips.py     # Cut game videos into per-utterance clips
 ├── scripts/
 │   ├── run_detection.py              # YOLOv8-Face + YOLOv8-pose → detections_*.json
 │   ├── run_gazelle.py                # Gazelle → gaze_*.json
@@ -199,6 +201,9 @@ huggingface-cli login
 ## Workflow
 
 ```bash
+# Step 0 — Extract per-utterance clips from game videos (run once)
+python preprocess/werewolf_extract_clips.py
+
 # Step 1 — Detection (prerequisite for all vision tasks)
 python scripts/run_detection.py
 
