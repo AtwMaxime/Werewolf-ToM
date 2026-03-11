@@ -1,5 +1,5 @@
 data/
-annotations/
+annotations/*.json
 models/detection/*/
 models/gaze/*/
 models/emotion/*/
