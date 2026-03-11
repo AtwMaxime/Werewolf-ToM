@@ -64,7 +64,7 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 | 1c | **Face re-ID** — Ego4D identity clustering | ArcFace via DeepFace | `pip install deepface` | auto-download |
 | 2 | **GazeFollow** — image gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
 | 3 | **VideoAttentionTarget** — video gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
-| 4 | **VideoCoAttention** — shared attention | TBD | TBD | TBD |
+| 4 | **VideoCoAttention / social gaze** — shared attention + mutual gaze | MTGS | [idiap/MTGS](https://github.com/idiap/MTGS) | HuggingFace (see below) |
 | 5 | **AffWild2** — facial expression, valence/arousal, AUs | TBD | `models/emotion/` | TBD |
 | 6 | **EMOTIC** — context emotion (26 cats + VAD) | TBD | `models/emotion/` | TBD |
 | 7 | **MEVIEW / MMEW** — micro-expression + AUs | TBD | `models/emotion/` | TBD |
@@ -86,6 +86,7 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 ```bash
 git clone https://github.com/Yusepp/YOLOv8-Face models/face/YOLOv8-Face
 git clone https://github.com/fkryan/gazelle models/gaze/gazelle
+git clone https://github.com/idiap/MTGS models/gaze/MTGS
 # ... (fill in remaining repos as decided)
 ```
 
@@ -101,7 +102,26 @@ Place weights under `models/face/YOLOv8-Face/weights/`:
 
 > We use **Medium** as the default balance between speed and accuracy.
 
-### 3. Install Python dependencies
+### 3. Install MTGS
+
+```bash
+cd models/gaze/MTGS
+pip install -r requirements.txt
+pip install -e .
+cd ../../..
+```
+
+MTGS pretrained weights are available on HuggingFace:
+
+| Variant | Description |
+|---------|-------------|
+| `mtgs-vsgaze` | **Default** — temporal model trained on VSGaze (multi-person social gaze) |
+| `mtgs-static-vsgaze` | Static (no temporal) — faster, slightly lower accuracy |
+| `mtgs-static-gazefollow` | Static model trained on GazeFollow |
+
+> Note: MTGS ships with YOLOv5 for head detection. We bypass this by feeding our YOLOv8-Face bboxes directly.
+
+### 4. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -119,7 +139,7 @@ python scripts/run_detection.py
 
 # 2. Run inference — one script per task (can be parallelised)
 python scripts/run_gazelle.py          # GazeFollow + VideoAttentionTarget
-python scripts/run_coattention.py      # VideoCoAttention
+python scripts/run_mtgs.py             # VideoCoAttention + social/mutual gaze (MTGS)
 python scripts/run_affwild2.py         # Facial expression / VA / AUs
 python scripts/run_emotic.py           # Context emotion
 python scripts/run_microexpr.py        # Micro-expression (MEVIEW/MMEW)
