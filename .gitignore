@@ -1,0 +1,7 @@
+data/
+annotations/
+models/*/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
