@@ -1,6 +1,10 @@
 data/
 annotations/
-models/*/
+models/detection/*/
+models/gaze/*/
+models/emotion/*/
+models/audio/*/
+models/behavior/*/
 __pycache__/
 *.pyc
 .venv/

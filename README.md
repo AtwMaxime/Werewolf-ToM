@@ -11,25 +11,57 @@ Runs SOTA specialized models on per-utterance video clips to generate rich multi
 ```
 WOLF-ToM/
 ├── data/
-│   └── WerewolfAmongUs/          # Raw dataset (not tracked by git)
+│   └── WerewolfAmongUs/              # Raw dataset (not tracked by git)
 │       ├── clips/
-│       │   ├── youtube/          # Per-utterance clips: utt_XXXX.mp4
+│       │   ├── youtube/              # Per-utterance clips: utt_XXXX.mp4
 │       │   └── ego4d/
-│       ├── Youtube/split/        # train/val/test annotation JSONs
+│       ├── Youtube/split/            # train/val/test annotation JSONs
 │       └── Ego4D/split/
 ├── models/
-│   ├── gaze/                     # Gaze detection model repo(s)
-│   ├── emotion/                  # Emotion recognition model repo(s)
-│   └── face/                     # Face detection / landmark model repo(s)
-├── annotations/                  # Inference output caches (not tracked)
-│   ├── gaze_youtube.json
+│   ├── detection/                    # YOLOv8-Face, YOLOv8-pose (prerequisites)
+│   │   └── YOLOv8-Face/
+│   ├── gaze/                         # Gazelle (GazeFollow + VAT), MTGS (social gaze)
+│   │   ├── gazelle/
+│   │   └── MTGS/
+│   ├── emotion/                      # HSEmotion, CocoER, DRKF
+│   │   ├── CocoER/
+│   │   └── DRKF/
+│   ├── audio/                        # AST (VocalSound), pyannote.audio (diarization)
+│   └── behavior/                     # MUStARD (sarcasm), RLDD (deception), UR-FUNNY (humor)
+├── annotations/                      # Inference output caches (not tracked)
+│   ├── detections_youtube.json       # Face/person bboxes + keypoints + player registry
+│   ├── detections_ego4d.json
+│   ├── gaze_youtube.json             # Gazelle: per-utterance gaze points
 │   ├── gaze_ego4d.json
-│   ├── emotion_youtube.json
-│   └── emotion_ego4d.json
+│   ├── social_gaze_youtube.json      # MTGS: mutual gaze + shared attention
+│   ├── social_gaze_ego4d.json
+│   ├── expression_youtube.json       # HSEmotion: expression + VA per speaker
+│   ├── expression_ego4d.json
+│   ├── context_emotion_youtube.json  # CocoER: 26-cat context emotion per player
+│   ├── context_emotion_ego4d.json
+│   ├── speech_emotion_youtube.json   # DRKF: 7-class speech emotion per utterance
+│   ├── speech_emotion_ego4d.json
+│   ├── proxemics_youtube.json        # YOLOv8-pose: pairwise keypoint contact
+│   ├── proxemics_ego4d.json
+│   ├── vocalsound_youtube.json       # AST: vocal sound classification
+│   ├── vocalsound_ego4d.json
+│   ├── diarization_youtube.json      # pyannote: speaker timeline per game
+│   ├── diarization_ego4d.json
+│   └── master.json                   # Merged output (all tasks, all utterances)
 ├── scripts/
-│   ├── run_gaze.py               # Inference: gaze model → annotations/gaze_*.json
-│   ├── run_emotion.py            # Inference: emotion model → annotations/emotion_*.json
-│   └── merge_annotations.py     # Merge all annotation JSONs into one master file
+│   ├── run_detection.py              # YOLOv8-Face + YOLOv8-pose → detections_*.json
+│   ├── run_gazelle.py                # Gazelle → gaze_*.json
+│   ├── run_mtgs.py                   # MTGS → social_gaze_*.json
+│   ├── run_hsemotion.py              # HSEmotion → expression_*.json
+│   ├── run_cocoer.py                 # CocoER → context_emotion_*.json
+│   ├── run_meld.py                   # DRKF → speech_emotion_*.json
+│   ├── run_proxemics.py              # keypoint distances → proxemics_*.json
+│   ├── run_vocalsound.py             # AST → vocalsound_*.json
+│   ├── run_voxconverse.py            # pyannote → diarization_*.json
+│   ├── run_mustard.py                # TBD → sarcasm_*.json
+│   ├── run_rldd.py                   # TBD → deception_*.json
+│   ├── run_urfunny.py                # TBD → humor_*.json
+│   └── merge_annotations.py          # All JSONs → master.json
 ├── requirements.txt
 └── README.md
 ```
@@ -59,21 +91,21 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 
 | # | Dataset / Task | Model | Repo | Weights |
 |---|---|---|---|---|
-| 1a | **Face detection + landmarks** (prerequisite) | YOLOv8-Face | [Yusepp/YOLOv8-Face](https://github.com/Yusepp/YOLOv8-Face) | see below |
-| 1b | **Person detection + keypoints** (prerequisite) | YOLOv8-pose | [ultralytics](https://github.com/ultralytics/ultralytics) | auto-download |
+| 1a | **Face detection + landmarks** (prerequisite) | YOLOv8-Face | [Yusepp/YOLOv8-Face](https://github.com/Yusepp/YOLOv8-Face) → `models/detection/` | see below |
+| 1b | **Person detection + keypoints** (prerequisite) | YOLOv8-pose | [ultralytics](https://github.com/ultralytics/ultralytics) → `pip install` | auto-download |
 | 1c | **Face re-ID** — Ego4D identity clustering | ArcFace via DeepFace | `pip install deepface` | auto-download |
-| 2 | **GazeFollow** — image gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
-| 3 | **VideoAttentionTarget** — video gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) | TBD |
-| 4 | **VideoCoAttention / social gaze** — shared attention + mutual gaze | MTGS | [idiap/MTGS](https://github.com/idiap/MTGS) | HuggingFace (see below) |
+| 2 | **GazeFollow** — image gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) → `models/gaze/` | TBD |
+| 3 | **VideoAttentionTarget** — video gaze target | Gazelle | [fkryan/gazelle](https://github.com/fkryan/gazelle) → `models/gaze/` | TBD |
+| 4 | **VideoCoAttention / social gaze** — shared attention + mutual gaze | MTGS | [idiap/MTGS](https://github.com/idiap/MTGS) → `models/gaze/` | HuggingFace (see below) |
 | 5 | **AffWild2** — facial expression (8 classes) + valence/arousal | HSEmotion | `pip install hsemotion` | auto-download |
-| 6 | **EMOTIC** — context emotion (26 discrete categories) | CocoER | [bisno/CocoER](https://github.com/bisno/CocoER) | see below |
-| 8 | **MELD** — speech emotion (7 classes) | DRKF | [PANPANKK/DRKF](https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition) | bundled locally |
-| 10 | **Proxemics** — physical contact | YOLOv8-pose (keypoint distances) | already in 1b | auto-download |
-| 11 | **MUStARD** — sarcasm detection | TBD | `models/` | TBD |
-| 12 | **RLDD** — deception detection | TBD | `models/` | TBD |
-| 13 | **UR-FUNNY** — humor detection | TBD | `models/` | TBD |
-| 14 | **VocalSound** — vocal sound classification | AST | `pip install transformers` | auto-download (HuggingFace) |
-| 15 | **VoxConverse** — speaker diarization | pyannote.audio | `pip install pyannote.audio` | HuggingFace (requires token) |
+| 6 | **EMOTIC** — context emotion (26 discrete categories) | CocoER | [bisno/CocoER](https://github.com/bisno/CocoER) → `models/emotion/` | see below |
+| 8 | **MELD** — speech emotion (7 classes) | DRKF | [PANPANKK/DRKF](https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition) → `models/emotion/` | bundled locally |
+| 10 | **Proxemics** — physical contact | YOLOv8-pose (keypoint distances) | already in 1b | — |
+| 11 | **MUStARD** — sarcasm detection | TBD | `models/behavior/` | TBD |
+| 12 | **RLDD** — deception detection | TBD | `models/behavior/` | TBD |
+| 13 | **UR-FUNNY** — humor detection | TBD | `models/behavior/` | TBD |
+| 14 | **VocalSound** — vocal sound classification | AST | `pip install transformers` → `models/audio/` | auto-download (HuggingFace) |
+| 15 | **VoxConverse** — speaker diarization | pyannote.audio | `pip install pyannote.audio` → `models/audio/` | HuggingFace (requires token) |
 
 ---
 
@@ -82,17 +114,26 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 ### 1. Clone model repos
 
 ```bash
-git clone https://github.com/Yusepp/YOLOv8-Face models/face/YOLOv8-Face
+# Detection (prerequisites)
+git clone https://github.com/Yusepp/YOLOv8-Face models/detection/YOLOv8-Face
+
+# Gaze
 git clone https://github.com/fkryan/gazelle models/gaze/gazelle
 git clone https://github.com/idiap/MTGS models/gaze/MTGS
+
+# Emotion
 git clone https://github.com/bisno/CocoER models/emotion/CocoER
 git clone https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition models/emotion/DRKF
-# ... (fill in remaining repos as decided)
+
+# Behavior (TBD)
+# git clone <mustard-repo> models/behavior/MUStARD
+# git clone <rldd-repo>    models/behavior/RLDD
+# git clone <urfunny-repo> models/behavior/UR-FUNNY
 ```
 
 ### 2. Download YOLOv8-Face weights
 
-Place weights under `models/face/YOLOv8-Face/weights/`:
+Place weights under `models/detection/YOLOv8-Face/weights/`:
 
 | Variant | Download |
 |---------|----------|
