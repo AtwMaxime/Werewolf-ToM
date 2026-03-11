@@ -68,7 +68,6 @@ The `merge_annotations.py` script combines all outputs into a single `annotation
 | 5 | **AffWild2** — facial expression (8 classes) + valence/arousal | HSEmotion | `pip install hsemotion` | auto-download |
 | 6 | **EMOTIC** — context emotion (26 discrete categories) | CocoER | [bisno/CocoER](https://github.com/bisno/CocoER) | see below |
 | 8 | **MELD** — speech emotion (7 classes) | DRKF | [PANPANKK/DRKF](https://github.com/PANPANKK/DRKF_Decoupled_Representations_with_Knowledge_Fusion_for_Multimodal_Emotion_Recognition) | bundled locally |
-| 9 | **PISC** — social relationship | TBD | `models/` | TBD |
 | 10 | **Proxemics** — physical contact | TBD | `models/` | TBD |
 | 11 | **MUStARD** — sarcasm detection | TBD | `models/` | TBD |
 | 12 | **RLDD** — deception detection | TBD | `models/` | TBD |
@@ -168,7 +167,6 @@ python scripts/run_mtgs.py             # VideoCoAttention + social/mutual gaze (
 python scripts/run_hsemotion.py        # Facial expression (8 classes) + valence/arousal
 python scripts/run_cocoer.py           # Context emotion (26 discrete categories, CocoER)
 python scripts/run_meld.py             # Speech emotion (7 classes, DRKF — custom inference wrapper)
-python scripts/run_pisc.py             # Social relationship
 python scripts/run_proxemics.py        # Physical contact
 python scripts/run_mustard.py          # Sarcasm
 python scripts/run_rldd.py             # Deception
