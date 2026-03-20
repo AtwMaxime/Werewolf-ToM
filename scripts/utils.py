@@ -2,6 +2,8 @@
 Shared utilities for WOLF-ToM annotation scripts.
 """
 
+from __future__ import annotations
+
 import json
 import os
 from typing import Generator, Iterator
@@ -9,7 +11,7 @@ from typing import Generator, Iterator
 import cv2
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATASET_DIR = os.path.join(ROOT_DIR, "data", "WerewolfAmongUs")
+DATASET_DIR = os.path.join(ROOT_DIR, "data")
 ANNOTATIONS_DIR = os.path.join(ROOT_DIR, "annotations")
 
 SUBSETS = ["youtube", "ego4d"]
