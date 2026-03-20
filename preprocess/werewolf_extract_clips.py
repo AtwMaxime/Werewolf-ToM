@@ -27,7 +27,7 @@ from tqdm import tqdm
 # ==========================================
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WEREWOLF_DIR = os.path.join(ROOT_DIR, "dataset", "WerewolfAmongUs")
+WEREWOLF_DIR = os.path.join(ROOT_DIR, "data", "WerewolfAmongUs")
 
 YOUTUBE_DIR = os.path.join(WEREWOLF_DIR, "Youtube")
 EGO4D_DIR = os.path.join(WEREWOLF_DIR, "Ego4D")

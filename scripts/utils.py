@@ -9,7 +9,7 @@ from typing import Generator, Iterator
 import cv2
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATASET_DIR = os.path.join(ROOT_DIR, "dataset", "WerewolfAmongUs")
+DATASET_DIR = os.path.join(ROOT_DIR, "data", "WerewolfAmongUs")
 ANNOTATIONS_DIR = os.path.join(ROOT_DIR, "annotations")
 
 SUBSETS = ["youtube", "ego4d"]
