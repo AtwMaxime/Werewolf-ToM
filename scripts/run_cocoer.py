@@ -98,6 +98,13 @@ OUTPUT_JSON = sys.argv[3]
 
 os.chdir(COCOER_DIR)  # model_GWT loads ./checkpoints/VI_weights/w.pth via relative path
 sys.path.insert(0, COCOER_DIR)
+# Patch torch.load to always map_location='cpu' so VI weights (saved on cuda:1)
+# load correctly when CUDA_VISIBLE_DEVICES limits visible devices.
+_orig_load = torch.load
+def _patched_load(*args, **kwargs):
+    kwargs.setdefault("map_location", "cpu")
+    return _orig_load(*args, **kwargs)
+torch.load = _patched_load
 from models_sw import model_GWT  # noqa
 
 # ── build minimal args namespace ──
@@ -188,7 +195,9 @@ def run_cocoer_batch(batch: dict) -> dict:
     env = os.environ.copy()
     env["PYTHONNOUSERSITE"] = "1"
     env.pop("PYTHONPATH", None)
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env)
+    proc = subprocess.run(cmd, check=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+    if proc.returncode != 0:
+        raise RuntimeError(proc.stdout.decode(errors="replace")[-3000:])
 
     with open(output_path) as f:
         results = json.load(f)
