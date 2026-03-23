@@ -36,6 +36,8 @@ Output — annotations/gaze_{subset}.json:
 }
 """
 
+from __future__ import annotations
+
 import os
 import sys
 
@@ -72,16 +74,14 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # ──────────────────────────────────────────────
 
 def load_gazelle():
-    """Load Gazelle's VideoAttentionTarget pipeline (temporal variant)."""
-    from gazelle.model import get_gazelle_model   # noqa: import after sys.path
-    model, transform = get_gazelle_model("gazelle_dinov2_vitl_inout")
-    ckpt_path = os.path.join(
-        ROOT_DIR, "models", "gaze", "gazelle", "checkpoints",
-        "gazelle_dinov2_vitl_inout.pt",
+    """Load Gazelle vitl14+inout via hubconf (auto-downloads weights)."""
+    model, transform = torch.hub.load(
+        os.path.join(ROOT_DIR, "models", "gaze", "gazelle"),
+        "gazelle_dinov2_vitl14_inout",
+        pretrained=True,
+        source="local",
+        trust_repo=True,
     )
-    if os.path.exists(ckpt_path):
-        state = torch.load(ckpt_path, map_location=DEVICE)
-        model.load_state_dict(state)
     model = model.to(DEVICE).eval()
     return model, transform
 
