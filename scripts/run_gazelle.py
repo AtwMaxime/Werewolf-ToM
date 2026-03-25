@@ -92,66 +92,79 @@ def load_gazelle():
 
 def run_gazelle_frame(model, transform, frame_bgr, persons: list) -> list[dict]:
     """
-    Run Gazelle on one frame for all tracked persons.
+    Run Gazelle on one frame for all tracked persons (batched per frame).
     Returns a list of per-person gaze dicts.
+
+    Correct API (gazelle_dinov2_vitl14):
+      input  = {"images": (1,3,H,W), "bboxes": [[(x1,y1,x2,y2), ...]]}
+      output = {"heatmap": [tensor(1,H,W) per person], "inout": tensor or None}
     """
+    from PIL import Image as _PILImage
     frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
     h, w = frame_rgb.shape[:2]
+    pil_img = _PILImage.fromarray(frame_rgb)
 
-    results = []
-    for person in persons:
-        face_bbox = person.get("face_bbox")
-        if face_bbox is None:
-            results.append({
-                "track_id":          person["track_id"],
-                "gaze_point":        None,
-                "gaze_conf":         None,
-                "gaze_inout":        None,
-                "gaze_inout_score":  None,
-            })
-            continue
+    # Split into persons with and without face bbox
+    valid_idx   = []   # indices into persons list
+    valid_bboxes = []  # normalised (x1,y1,x2,y2) tuples
 
-        # Normalise face bbox to [0,1]
-        x1, y1, x2, y2 = face_bbox
-        bbox_norm = [x1 / w, y1 / h, x2 / w, y2 / h]
+    for i, person in enumerate(persons):
+        fb = person.get("face_bbox")
+        if fb is not None:
+            x1, y1, x2, y2 = fb
+            valid_idx.append(i)
+            valid_bboxes.append((x1 / w, y1 / h, x2 / w, y2 / h))
 
-        try:
-            with torch.no_grad():
-                inp = transform(frame_rgb).unsqueeze(0).to(DEVICE)
-                bbox_t = torch.tensor([bbox_norm], dtype=torch.float32).to(DEVICE)
-                out = model(inp, bbox_t)
+    # Default null result for every person
+    results = [{
+        "track_id":         p["track_id"],
+        "gaze_point":       None,
+        "gaze_conf":        None,
+        "gaze_inout":       None,
+        "gaze_inout_score": None,
+    } for p in persons]
 
-            # out["heatmap"]: (1,1,H,W)  out["inout"]: (1,1)
-            heatmap = out["heatmap"][0, 0].cpu().numpy()
+    if not valid_bboxes:
+        return results
+
+    try:
+        img_t = transform(pil_img).unsqueeze(0).to(DEVICE)
+        inp   = {"images": img_t, "bboxes": [valid_bboxes]}
+        with torch.no_grad():
+            out = model(inp)
+
+        # out["heatmap"]: list of length 1 (per image); element is (N_persons, H, W)
+        heatmaps = out["heatmap"][0].cpu().numpy()  # (N_persons, H, W)
+        inouts   = out.get("inout") # tensor or None
+
+        for j, i in enumerate(valid_idx):
+            heatmap  = heatmaps[j]  # (H, W)
             flat_idx = int(np.argmax(heatmap))
             gy = flat_idx // heatmap.shape[1]
             gx = flat_idx  % heatmap.shape[1]
             gaze_point = [gx / heatmap.shape[1], gy / heatmap.shape[0]]
             gaze_conf  = float(heatmap.max())
 
-            inout_score = float(torch.sigmoid(out["inout"][0, 0]).cpu())
-            inout_label = "in" if inout_score >= 0.5 else "out"
+            if inouts is not None:
+                inout_score = float(torch.sigmoid(inouts[j, 0]).cpu())
+                inout_label = "in" if inout_score >= 0.5 else "out"
+            else:
+                inout_score = None
+                inout_label = None
 
             entry = {
-                "track_id":          person["track_id"],
-                "gaze_point":        gaze_point,
-                "gaze_conf":         gaze_conf,
-                "gaze_inout":        inout_label,
-                "gaze_inout_score":  inout_score,
+                "track_id":         persons[i]["track_id"],
+                "gaze_point":       gaze_point,
+                "gaze_conf":        gaze_conf,
+                "gaze_inout":       inout_label,
+                "gaze_inout_score": inout_score,
             }
             if STORE_HEATMAP:
                 entry["gaze_heatmap"] = heatmap.tolist()
+            results[i] = entry
 
-        except Exception:
-            entry = {
-                "track_id":          person["track_id"],
-                "gaze_point":        None,
-                "gaze_conf":         None,
-                "gaze_inout":        None,
-                "gaze_inout_score":  None,
-            }
-
-        results.append(entry)
+    except Exception as e:
+        print(f"    gaze frame error: {e}", flush=True)
 
     return results
 

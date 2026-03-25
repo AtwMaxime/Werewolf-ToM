@@ -30,6 +30,15 @@ import sys
 import tempfile
 from collections import defaultdict
 
+import torch
+
+# PyTorch ≥2.6 defaults weights_only=True which breaks pyannote/lightning ckpts
+_orig_torch_load = torch.load
+def _torch_load_unsafe(*args, **kwargs):
+    kwargs["weights_only"] = False
+    return _orig_torch_load(*args, **kwargs)
+torch.load = _torch_load_unsafe
+
 from tqdm import tqdm
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
