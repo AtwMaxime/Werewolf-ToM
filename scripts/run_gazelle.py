@@ -146,7 +146,7 @@ def run_gazelle_frame(model, transform, frame_bgr, persons: list) -> list[dict]:
             gaze_conf  = float(heatmap.max())
 
             if inouts is not None:
-                inout_score = float(torch.sigmoid(inouts[j, 0]).cpu())
+                inout_score = float(torch.sigmoid(inouts[0][j]).cpu())
                 inout_label = "in" if inout_score >= 0.5 else "out"
             else:
                 inout_score = None
