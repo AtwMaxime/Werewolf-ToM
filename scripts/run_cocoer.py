@@ -152,11 +152,10 @@ def infer_person(model, ctx_t, pil_img, face_bbox, body_bbox, H, W):
     head = _transform(pil_img.crop(face_bbox)).unsqueeze(0).to(DEVICE)
     cb   = torch.tensor([_scale_coord(body_bbox, (H, W))]).to(DEVICE)
     ch   = torch.tensor([_scale_coord(face_bbox, (H, W))]).to(DEVICE)
-    with torch.no_grad():
-        pred, _, _ = model(ctx, body, head, cb, ch, None)
+    pred, _, _ = model(ctx, body, head, cb, ch, None)
     if pred is None:
         return None
-    scores_np = torch.sigmoid(pred[0]).cpu().numpy()
+    scores_np = torch.sigmoid(pred[0]).detach().cpu().numpy()
     return {cls: float(scores_np[i]) for i, cls in enumerate(COCOER_CLASSES)}
 
 
@@ -207,7 +206,8 @@ def process_clip(model, utt, detections):
                     "context_emotions": top,
                     "context_emotion_scores": score_dict,
                 })
-            except Exception:
+            except Exception as e:
+                print("  WARN person {}: {}".format(p["track_id"], e))
                 frame_persons.append({
                     "track_id": p["track_id"],
                     "context_emotions": None,
